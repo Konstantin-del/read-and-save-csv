@@ -95,8 +95,6 @@ export default function HomePage() {
   const [total, setTotal] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [previewHeaders, setPreviewHeaders] = useState<string[]>([]);
-  const [previewRows, setPreviewRows] = useState<string[][]>([]);
 
   const columns = useMemo(() => {
     const set = new Set<string>();
@@ -108,18 +106,6 @@ export default function HomePage() {
 
   async function handleFileSelected(f: File | null) {
     setFile(f);
-    setPreviewHeaders([]);
-    setPreviewRows([]);
-    if (!f) return;
-    try {
-      const blob = f.slice(0, 1_000_000); // read first ~1MB for preview
-      const text = await blob.text();
-      const parsed = parseCsvPreview(text, 100);
-      setPreviewHeaders(parsed.headers);
-      setPreviewRows(parsed.rows);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    }
   }
 
   async function handleUpload() {
@@ -135,6 +121,7 @@ export default function HomePage() {
       const json = (await res.json()) as { ok: boolean; rows: number };
       setUploadedCount(json.rows);
       await load(1);
+      setFile(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -182,7 +169,7 @@ export default function HomePage() {
           className="px-4 py-2 rounded border"
           onClick={() => fileInputRef.current?.click()}
         >
-          Choose file
+          {file ? file.name : "Choose file"}
         </button>
         {file && <span className="text-sm text-gray-700">{file.name}</span>}
         <button
@@ -198,39 +185,6 @@ export default function HomePage() {
           </span>
         )}
       </div>
-
-      {previewHeaders.length > 0 && (
-        <div className="space-y-2">
-          <div className="font-medium">
-            Preview (first {previewRows.length} rows)
-          </div>
-          <div className="overflow-auto border rounded">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr>
-                  {previewHeaders.map((h) => (
-                    <th key={h} className="p-2 border-b text-left">
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {previewRows.map((r, idx) => (
-                  <tr key={idx} className="odd:bg-gray-50">
-                    {previewHeaders.map((_, colIdx) => (
-                      <td key={colIdx} className="p-2 border-b">
-                        {String(r[colIdx] ?? "")}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
       <div className="flex items-center gap-2">
         <input
           className="border rounded px-3 py-2 w-80"
