@@ -13,7 +13,7 @@ function getEnv(name: string, fallback?: string): string {
 export function getPool(): Pool {
   if (pool) return pool;
   pool = new Pool({
-    host: getEnv("POSTGRES_HOST", "127.0.0.1"),
+    host: getEnv("POSTGRES_HOST", ""), //127.0.0.1
     port: Number(getEnv("POSTGRES_PORT", "5432")),
     database: getEnv("POSTGRES_DB", "csvdb"),
     user: getEnv("POSTGRES_USER", "postgres"),
