@@ -18,7 +18,6 @@ function parseCsvPreview(
   text: string,
   maxRows: number
 ): { headers: string[]; rows: string[][] } {
-  // Simple CSV parser that handles quoted fields and commas; not RFC-complete but sufficient for preview
   const rows: string[][] = [];
   let i = 0;
   let field = "";
@@ -66,7 +65,6 @@ function parseCsvPreview(
       continue;
     }
     if (ch === "\r") {
-      // handle CRLF
       pushField();
       pushRow();
       i += text[i + 1] === "\n" ? 2 : 1;
@@ -75,7 +73,7 @@ function parseCsvPreview(
     field += ch;
     i++;
   }
-  // flush last row if not ended with newline
+
   if (field.length > 0 || current.length > 0) {
     pushField();
     pushRow();
@@ -136,7 +134,7 @@ export default function HomePage() {
       if (!res.ok) throw new Error(await res.text());
       const json = (await res.json()) as { ok: boolean; rows: number };
       setUploadedCount(json.rows);
-      await load(1); // auto-load first page from DB after upload
+      await load(1);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
